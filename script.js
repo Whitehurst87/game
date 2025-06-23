@@ -5,6 +5,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const winResult = document.getElementById('win-result');
     const loseResult = document.getElementById('lose-result');
     const resetButton = document.getElementById('reset-button');
+
+    function disableDoorClicks() {
+        door1.removeEventListener('click', () => handleDoorClick(door1, 1));
+        door2.removeEventListener('click', () => handleDoorClick(door2, 2));
+    }
+
+    // Check if the user has listened to the troll story
+    if (!localStorage.getItem('trollStoryListened')) {
+        // Show the troll dialogue
+        showTrollDialogue();
+
+        // Disable door clicks
+        disableDoorClicks();
+
+        // Override safePassage to set the local storage item
+        const originalSafePassage = safePassage;
+        safePassage = () => {
+            localStorage.setItem('trollStoryListened', 'true');
+            originalSafePassage();
+            gameActive = false;
+            winResult.classList.remove('hidden');
+            resetButton.classList.remove('hidden');
+        }
+    }
     
     // Game state
     let gameActive = true;
@@ -214,10 +238,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalContent = document.createElement('div');
         modalContent.classList.add('modal-content');
         modalContent.style.cssText = `
-            background-color: white;
+            background-color: rgba(0, 0, 0, 0.5);
             padding: 20px;
-            border-radius: 5px;
+            border-radius: 20px;
             text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            color: white;
         `;
 
         const trollImage = document.createElement('img');
@@ -229,20 +257,34 @@ document.addEventListener('DOMContentLoaded', () => {
             margin-bottom: 10px;
         `;
 
+        const trollDialogue = [
+            "Oi, you! Wanna hear a story?",
+            "Psst, hey kid, wanna hear about the time I wrestled a bear?",
+            "I've got a tale that'll curl your toes! Interested?",
+            "Listen up, I've got a story that's better than free gold!",
+            "Hey, you! Stop right there and listen to my story!"
+        ];
+
         const message = document.createElement('p');
-        message.textContent = 'Do you want to listen to my story?';
+        message.textContent = trollDialogue[Math.floor(Math.random() * trollDialogue.length)];
         message.style.marginBottom = '10px';
+        message.style.color = '#e0e0e0';
 
         const acceptButton = document.createElement('button');
-        acceptButton.textContent = 'Yes';
+        acceptButton.textContent = 'Yes, tell me more!';
         acceptButton.style.cssText = `
             margin-right: 10px;
-            padding: 5px 10px;
-            border-radius: 5px;
-            background-color: green;
+            padding: 12px 25px;
+            background: linear-gradient(145deg, #4a69bd, #6a89cc);
             color: white;
             border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-family: 'Poppins', sans-serif;
         `;
         acceptButton.addEventListener('click', () => {
             // Play the story
@@ -253,19 +295,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const declineButton = document.createElement('button');
         declineButton.textContent = 'No';
         declineButton.style.cssText = `
-            padding: 5px 10px;
-            border-radius: 5px;
-            background-color: red;
+            padding: 12px 25px;
+            background: linear-gradient(145deg, #4a69bd, #6a89cc);
             color: white;
             border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-family: 'Poppins', sans-serif;
         `;
         declineButton.addEventListener('click', () => {
             modal.remove();
         });
 
+        const progressBarContainer = document.createElement('div');
+        progressBarContainer.style.cssText = `
+            width: 100%;
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        `;
+
+        const progressBar = document.createElement('div');
+        progressBar.id = 'troll-story-progress';
+        progressBar.style.cssText = `
+            width: 0%;
+            height: 100%;
+            background-color: #4CAF50;
+            border-radius: 5px;
+        `;
+        progressBarContainer.appendChild(progressBar);
+
         modalContent.appendChild(trollImage);
         modalContent.appendChild(message);
+        modalContent.appendChild(progressBarContainer);
         modalContent.appendChild(acceptButton);
         modalContent.appendChild(declineButton);
         modal.appendChild(modalContent);
@@ -273,11 +340,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function playTrollStory() {
-        // Play the story sound
-        playSound('troll_story');
+        const audio = new Audio('sound effects/troll_story.mp3');
+        audio.volume = 0.5;
 
-        // Grant safe passage
-        safePassage();
+        const progressBar = document.getElementById('troll-story-progress');
+
+        audio.addEventListener('timeupdate', () => {
+            const percentage = (audio.currentTime / audio.duration) * 100;
+            progressBar.style.width = percentage + '%';
+        });
+
+        audio.addEventListener('ended', () => {
+            // Grant safe passage
+            safePassage();
+        });
+
+        audio.play();
     }
 
     function safePassage() {
