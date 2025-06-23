@@ -1,16 +1,16 @@
+// Game elements
+const door1 = document.getElementById('door1');
+const door2 = document.getElementById('door2');
+const winResult = document.getElementById('win-result');
+const loseResult = document.getElementById('lose-result');
+const resetButton = document.getElementById('reset-button');
+
+function disableDoorClicks() {
+    door1.removeEventListener('click', () => handleDoorClick(door1, 1));
+    door2.removeEventListener('click', () => handleDoorClick(door2, 2));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Game elements
-    const door1 = document.getElementById('door1');
-    const door2 = document.getElementById('door2');
-    const winResult = document.getElementById('win-result');
-    const loseResult = document.getElementById('lose-result');
-    const resetButton = document.getElementById('reset-button');
-
-    function disableDoorClicks() {
-        door1.removeEventListener('click', () => handleDoorClick(door1, 1));
-        door2.removeEventListener('click', () => handleDoorClick(door2, 2));
-    }
-
     // Check if the user has listened to the troll story
     if (!localStorage.getItem('trollStoryListened')) {
         // Show the troll dialogue
@@ -22,21 +22,35 @@ document.addEventListener('DOMContentLoaded', () => {
         // Override safePassage to set the local storage item
         const originalSafePassage = safePassage;
         safePassage = () => {
-            localStorage.setItem('trollStoryListened', 'true');
-            originalSafePassage();
-            gameActive = false;
-            winResult.classList.remove('hidden');
-            resetButton.classList.remove('hidden');
+            const audio = new Audio('sound effects/troll_story.mp3');
+            audio.volume = 0.5;
+
+            const progressBar = document.getElementById('troll-story-progress');
+
+            audio.addEventListener('timeupdate', () => {
+                const percentage = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = percentage + '%';
+            });
+
+            audio.addEventListener('ended', () => {
+                localStorage.setItem('trollStoryListened', 'true');
+                gameActive = false;
+                winResult.classList.remove('hidden');
+                resetButton.classList.remove('hidden');
+                originalSafePassage();
+            });
+
+            audio.play();
         }
     }
-    
+
     // Game state
     let gameActive = true;
     let partyDoor = null;
     let audioEnabled = false;
     let partyModeSelected = false;
     let bearIconClicks = 0;
-    
+
     // Pre-load audio files to improve playback chances
     const audioFiles = {
         'win': 'sound effects/win-cheering.mp3',
@@ -53,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     let audioContext;
-    
+
     // Try to enable audio with user interaction
     document.addEventListener('click', function enableAudio() {
         // Create a silent audio context
@@ -65,16 +79,21 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Could not enable audio context:', e);
         });
     }, { once: true });
-    
+
     // Initialize the game
     initGame();
-    
+
     // Event listeners
     door1.addEventListener('click', () => handleDoorClick(door1, 1));
-    door1.addEventListener('touchstart', handleDoorTouchStart);
-    door1.addEventListener('touchend', handleDoorTouchEnd);
     door2.addEventListener('click', () => handleDoorClick(door2, 2));
     resetButton.addEventListener('click', resetGame);
+
+    // Check if the user is on a mobile device
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        // Add touch event listeners for mobile
+        door1.addEventListener('touchstart', handleDoorTouchStart);
+        door1.addEventListener('touchend', handleDoorTouchEnd);
+    }
 
     // Bear icon click handler (Easter Egg)
     const bearIcon = document.querySelector('.bear-icon'); // Assuming you have a bear icon with this class
@@ -82,20 +101,20 @@ document.addEventListener('DOMContentLoaded', () => {
         bearIcon.addEventListener('click', handleBearIconClick);
         bearIcon.addEventListener('touchstart', handleBearIconClick);
     }
-    
+
     // Function to initialize the game
     function initGame() {
         // Randomly decide which door has the party
         partyDoor = Math.random() < 0.5 ? 1 : 2;
-        
+
         // Reset game state
         gameActive = true;
-        
+
         // Hide results and reset button
         winResult.classList.add('hidden');
         loseResult.classList.add('hidden');
         resetButton.classList.add('hidden');
-        
+
         // Reset doors
         resetDoors();
 
@@ -109,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
             bearIconClicks++;
         }
     }
-    
+
     // Function to handle door clicks
     function handleDoorClick(doorElement, doorNumber) {
         // Only proceed if the game is active
@@ -118,19 +137,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (doorNumber === partyDoor) {
             partyModeSelected = true;
         }
-        
+
         // Play door creaking sound
         playSound('door_creak');
-        
+
         // Open the door
         doorElement.classList.add('open');
-        
+
         // Show the appropriate content behind the door
         if (doorNumber === partyDoor) {
             // Show party
             doorElement.querySelector('.door-back.party').classList.remove('hidden');
             doorElement.querySelector('.door-back.bears').classList.add('hidden');
-            
+
             // Show win message
             setTimeout(() => {
                 winResult.classList.remove('hidden');
@@ -141,17 +160,17 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show bears
             doorElement.querySelector('.door-back.bears').classList.remove('hidden');
             doorElement.querySelector('.door-back.party').classList.add('hidden');
-            
+
             // Play initial bear growl
             setTimeout(() => {
                 playSound('bear_growl');
             }, 300);
-            
+
             // Play bear attack sound after a short delay
             setTimeout(() => {
                 playSound('bear_attack');
             }, 1000);
-            
+
             // Show lose message
             setTimeout(() => {
                 loseResult.classList.remove('hidden');
@@ -159,14 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 playSound('bear_laugh');
             }, 1500);
         }
-        
+
         // Open the other door to show what was behind it
         const otherDoorElement = doorNumber === 1 ? door2 : door1;
         const otherDoorNumber = doorNumber === 1 ? 2 : 1;
-        
+
         setTimeout(() => {
             otherDoorElement.classList.add('open');
-            
+
             if (otherDoorNumber === partyDoor) {
                 otherDoorElement.querySelector('.door-back.party').classList.remove('hidden');
                 otherDoorElement.querySelector('.door-back.bears').classList.add('hidden');
@@ -175,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 otherDoorElement.querySelector('.door-back.party').classList.add('hidden');
             }
         }, 1200);
-        
+
         // Game is now inactive until reset
         gameActive = false;
 
@@ -185,20 +204,20 @@ document.addEventListener('DOMContentLoaded', () => {
             headline.classList.add('clickable-headline');
         }
     }
-    
+
     // Function to reset doors
     function resetDoors() {
         // Reset door 1
         door1.classList.remove('open');
         door1.querySelector('.door-back.party').classList.add('hidden');
         door1.querySelector('.door-back.bears').classList.add('hidden');
-        
+
         // Reset door 2
         door2.classList.remove('open');
         door2.querySelector('.door-back.party').classList.add('hidden');
         door2.querySelector('.door-back.bears').classList.add('hidden');
     }
-    
+
     // Function to reset the game
     function resetGame() {
         initGame();
@@ -320,8 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
             margin-bottom: 10px;
         `;
 
-        const progressBar = document.createElement('div');
-        progressBar.id = 'troll-story-progress';
+        const progressBar = document.getElementById('troll-story-progress');
         progressBar.style.cssText = `
             width: 0%;
             height: 100%;
@@ -370,7 +388,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // alert(easterEggMessage); // Or display in a more elegant way
 
         // Swap the headline text with the easter egg message
-        const headline = document.querySelector('h1');
+        const headline = document.querySelector('h1'); // Assuming the headline is an h1 element
+
         if (headline) {
             headline.textContent = easterEggMessage;
         }
@@ -441,7 +460,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     audio.volume = 0.6;
                     break;
                 case 'hidden_scream_1':
+                    audio.volume = 1.0;
+                    break;
                 case 'hidden_scream_2':
+                    audio.volume = 1.0;
+                    break;
                 case 'hidden_roar_1':
                     audio.volume = 1.0;
                     break;
@@ -451,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 default:
                     audio.volume = 0.5;
             }
-            
+        
             // Play the sound with better error handling
             const playPromise = audio.play();
 
