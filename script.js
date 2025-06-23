@@ -1,48 +1,11 @@
-// Game elements
-const door1 = document.getElementById('door1');
-const door2 = document.getElementById('door2');
-const winResult = document.getElementById('win-result');
-const loseResult = document.getElementById('lose-result');
-const resetButton = document.getElementById('reset-button');
-
-function disableDoorClicks() {
-    door1.removeEventListener('click', () => handleDoorClick(door1, 1));
-    door2.removeEventListener('click', () => handleDoorClick(door2, 2));
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if the user has listened to the troll story
-    if (!localStorage.getItem('trollStoryListened')) {
-        // Show the troll dialogue
-        showTrollDialogue();
-
-        // Disable door clicks
-        disableDoorClicks();
-
-        // Override safePassage to set the local storage item
-        const originalSafePassage = safePassage;
-        safePassage = () => {
-            const audio = new Audio('sound effects/troll_story.mp3');
-            audio.volume = 0.5;
-
-            const progressBar = document.getElementById('troll-story-progress');
-
-            audio.addEventListener('timeupdate', () => {
-                const percentage = (audio.currentTime / audio.duration) * 100;
-                progressBar.style.width = percentage + '%';
-            });
-
-            audio.addEventListener('ended', () => {
-                localStorage.setItem('trollStoryListened', 'true');
-                gameActive = false;
-                winResult.classList.remove('hidden');
-                resetButton.classList.remove('hidden');
-                originalSafePassage();
-            });
-
-            audio.play();
-        }
-    }
+    // Game elements
+    const door1 = document.getElementById('door1');
+    const door2 = document.getElementById('door2');
+    const winResult = document.getElementById('win-result');
+    const loseResult = document.getElementById('lose-result');
+    const resetButton = document.getElementById('reset-button');
+    const gameArea = document.querySelector('.game-area');
 
     // Game state
     let gameActive = true;
@@ -93,6 +56,144 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add touch event listeners for mobile
         door1.addEventListener('touchstart', handleDoorTouchStart);
         door1.addEventListener('touchend', handleDoorTouchEnd);
+    }
+
+    let doorHoldTimer;
+
+    function handleDoorTouchStart() {
+        doorHoldTimer = setTimeout(() => {
+            // Show the troll
+            showTrollDialogue();
+        }, 3000);
+    }
+
+    function handleDoorTouchEnd() {
+        clearTimeout(doorHoldTimer);
+    }
+
+    function showTrollDialogue() {
+        // Create the dialogue elements
+        const modal = document.createElement('div');
+        modal.classList.add('modal');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        `;
+
+        const modalContent = document.createElement('div');
+        modalContent.classList.add('modal-content');
+        modalContent.style.cssText = `
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            color: white;
+        `;
+
+        const trollImage = document.createElement('img');
+        trollImage.src = 'assets/troll.png.png';
+        trollImage.alt = 'Troll';
+        trollImage.style.cssText = `
+            width: 200px;
+            height: auto;
+            margin-bottom: 10px;
+        `;
+
+        const trollDialogue = [
+            "Oi, you! Wanna hear a story?",
+            "Psst, hey kid, wanna hear about the time I wrestled a bear?",
+            "I've got a tale that'll curl your toes! Interested?",
+            "Listen up, I've got a story that's better than free gold!",
+            "Hey, you! Stop right there and listen to my story!"
+        ];
+
+        const message = document.createElement('p');
+        message.textContent = trollDialogue[Math.floor(Math.random() * trollDialogue.length)];
+        message.style.marginBottom = '10px';
+        message.style.color = '#e0e0e0';
+
+        const acceptButton = document.createElement('button');
+        acceptButton.textContent = 'Yes, tell me more!';
+        acceptButton.style.cssText = `
+            margin-right: 10px;
+            padding: 12px 25px;
+            background: linear-gradient(145deg, #4a69bd, #6a89cc);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-family: 'Poppins', sans-serif;
+        `;
+        acceptButton.addEventListener('click', () => {
+            // Play the story
+            playTrollStory();
+            modal.remove();
+        });
+
+        const declineButton = document.createElement('button');
+        declineButton.textContent = 'No';
+        declineButton.style.cssText = `
+            padding: 12px 25px;
+            background: linear-gradient(145deg, #4a69bd, #6a89cc);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-family: 'Poppins', sans-serif;
+        `;
+        declineButton.addEventListener('click', () => {
+            modal.remove();
+        });
+
+        modalContent.appendChild(trollImage);
+        modalContent.appendChild(message);
+        modalContent.appendChild(acceptButton);
+        modalContent.appendChild(declineButton);
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+    }
+
+    function playTrollStory() {
+        // Hide the game area
+        gameArea.style.display = 'none';
+
+        const audio = new Audio('sound effects/troll_story.mp3');
+        audio.volume = 0.5;
+
+        audio.addEventListener('ended', () => {
+            // Show the game area
+            gameArea.style.display = 'flex';
+
+            // Grant safe passage
+            safePassage();
+        });
+
+        audio.play();
+    }
+
+    function safePassage() {
+        gameActive = false;
+        winResult.classList.remove('hidden');
+        resetButton.classList.remove('hidden');
     }
 
     // Bear icon click handler (Easter Egg)
@@ -224,172 +325,13 @@ document.addEventListener('DOMContentLoaded', () => {
         playSound('reset');
     }
 
-    let doorHoldTimer;
-
-    function handleDoorTouchStart() {
-        doorHoldTimer = setTimeout(() => {
-            // Show the troll
-            showTrollDialogue();
-        }, 5000);
-    }
-
-    function handleDoorTouchEnd() {
-        clearTimeout(doorHoldTimer);
-    }
-
-    function showTrollDialogue() {
-        // Create the dialogue elements
-        const modal = document.createElement('div');
-        modal.classList.add('modal');
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        `;
-
-        const modalContent = document.createElement('div');
-        modalContent.classList.add('modal-content');
-        modalContent.style.cssText = `
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-            color: white;
-        `;
-
-        const trollImage = document.createElement('img');
-        trollImage.src = 'assets/troll.png.png';
-        trollImage.alt = 'Troll';
-        trollImage.style.cssText = `
-            width: 200px;
-            height: auto;
-            margin-bottom: 10px;
-        `;
-
-        const trollDialogue = [
-            "Oi, you! Wanna hear a story?",
-            "Psst, hey kid, wanna hear about the time I wrestled a bear?",
-            "I've got a tale that'll curl your toes! Interested?",
-            "Listen up, I've got a story that's better than free gold!",
-            "Hey, you! Stop right there and listen to my story!"
-        ];
-
-        const message = document.createElement('p');
-        message.textContent = trollDialogue[Math.floor(Math.random() * trollDialogue.length)];
-        message.style.marginBottom = '10px';
-        message.style.color = '#e0e0e0';
-
-        const acceptButton = document.createElement('button');
-        acceptButton.textContent = 'Yes, tell me more!';
-        acceptButton.style.cssText = `
-            margin-right: 10px;
-            padding: 12px 25px;
-            background: linear-gradient(145deg, #4a69bd, #6a89cc);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            font-family: 'Poppins', sans-serif;
-        `;
-        acceptButton.addEventListener('click', () => {
-            // Play the story
-            playTrollStory();
-            modal.remove();
-        });
-
-        const declineButton = document.createElement('button');
-        declineButton.textContent = 'No';
-        declineButton.style.cssText = `
-            padding: 12px 25px;
-            background: linear-gradient(145deg, #4a69bd, #6a89cc);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            font-family: 'Poppins', sans-serif;
-        `;
-        declineButton.addEventListener('click', () => {
-            modal.remove();
-        });
-
-        const progressBarContainer = document.createElement('div');
-        progressBarContainer.style.cssText = `
-            width: 100%;
-            height: 10px;
-            background-color: #ddd;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        `;
-
-        const progressBar = document.getElementById('troll-story-progress');
-        progressBar.style.cssText = `
-            width: 0%;
-            height: 100%;
-            background-color: #4CAF50;
-            border-radius: 5px;
-        `;
-        progressBarContainer.appendChild(progressBar);
-
-        modalContent.appendChild(trollImage);
-        modalContent.appendChild(message);
-        modalContent.appendChild(progressBarContainer);
-        modalContent.appendChild(acceptButton);
-        modalContent.appendChild(declineButton);
-        modal.appendChild(modalContent);
-        document.body.appendChild(modal);
-    }
-
-    function playTrollStory() {
-        const audio = new Audio('sound effects/troll_story.mp3');
-        audio.volume = 0.5;
-
-        const progressBar = document.getElementById('troll-story-progress');
-
-        audio.addEventListener('timeupdate', () => {
-            const percentage = (audio.currentTime / audio.duration) * 100;
-            progressBar.style.width = percentage + '%';
-        });
-
-        audio.addEventListener('ended', () => {
-            // Grant safe passage
-            safePassage();
-        });
-
-        audio.play();
-    }
-
-    function safePassage() {
-        gameActive = false;
-        winResult.classList.remove('hidden');
-        resetButton.classList.remove('hidden');
-    }
-
     // Function to display the easter egg message
     function displayEasterEgg() {
         const easterEggMessage = "The bears have escaped and crashed the party!";
         // alert(easterEggMessage); // Or display in a more elegant way
 
         // Swap the headline text with the easter egg message
-        const headline = document.querySelector('h1'); // Assuming the headline is an h1 element
-
+        const headline = document.querySelector('h1');
         if (headline) {
             headline.textContent = easterEggMessage;
         }
@@ -423,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         requestAnimationFrame(animateShake);
     }
-    
+
     // Function to play sound effects
     function playSound(type) {
         console.log('playSound called with type:', type, 'audioEnabled:', audioEnabled);
@@ -431,16 +373,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!audioEnabled && type !== 'door_creak') {
             return; // Still try to play the door creak as it's the first sound
         }
-        
+
         // Create audio element
         const audio = new Audio();
-        
+
         // Set source based on type
         if (audioFiles[type]) {
             audio.src = audioFiles[type];
-            
+
             // Set appropriate volume
-            switch(type) {
+            switch (type) {
                 case 'win':
                     audio.volume = 0.7;
                     break;
@@ -460,11 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     audio.volume = 0.6;
                     break;
                 case 'hidden_scream_1':
-                    audio.volume = 1.0;
-                    break;
                 case 'hidden_scream_2':
-                    audio.volume = 1.0;
-                    break;
                 case 'hidden_roar_1':
                     audio.volume = 1.0;
                     break;
@@ -474,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 default:
                     audio.volume = 0.5;
             }
-        
+
             // Play the sound with better error handling
             const playPromise = audio.play();
 
