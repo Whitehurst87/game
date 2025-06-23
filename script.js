@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loseResult = document.getElementById('lose-result');
     const resetButton = document.getElementById('reset-button');
     const gameArea = document.querySelector('.game-area');
+    const instructions = document.querySelector('.instructions');
 
     // Game state
     let gameActive = true;
@@ -41,7 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch(e => {
             console.log('Could not enable audio context:', e);
         });
-    }, { once: true });
+    }, {
+        once: true
+    });
 
     // Initialize the game
     initGame();
@@ -175,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function playTrollStory() {
         // Hide the game area
         gameArea.style.display = 'none';
+        instructions.style.display = 'none';
 
         const audio = new Audio('sound effects/troll_story.mp3');
         audio.volume = 0.5;
@@ -182,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         audio.addEventListener('ended', () => {
             // Show the game area
             gameArea.style.display = 'flex';
+            instructions.style.display = 'block';
 
             // Grant safe passage
             safePassage();
@@ -194,6 +199,18 @@ document.addEventListener('DOMContentLoaded', () => {
         gameActive = false;
         winResult.classList.remove('hidden');
         resetButton.classList.remove('hidden');
+        winResult.classList.add('graffiti');
+        playSound('win');
+
+        // Add humorous message
+        const trollMessage = document.createElement('p');
+        trollMessage.textContent = "Thanks for bearing with the troll and his wacky stories!";
+        trollMessage.style.cssText = `
+            font-size: 1.2rem;
+            margin-top: 20px;
+            color: #e0e0e0;
+        `;
+        gameArea.appendChild(trollMessage);
     }
 
     // Bear icon click handler (Easter Egg)
