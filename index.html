@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Door Game - Party or Bears?</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>The Door Game</h1>
+        <p class="instructions">Choose a door! One leads to a fun party, the other to hungry bears...</p>
+        
+        <div class="game-area">
+            <div class="doors">
+                <div class="door" id="door1">
+                    <div class="door-front">1</div>
+                    <div class="door-back party hidden">🎉</div>
+                    <div class="door-back bears hidden">🐻</div>
+                </div>
+                <div class="door" id="door2">
+                    <div class="door-front">2</div>
+                    <div class="door-back party hidden">🎉</div>
+                    <div class="door-back bears hidden">🐻</div>
+                </div>
+            </div>
+            
+            <div class="result hidden" id="win-result">
+                <h2>You found the party! 🎉</h2>
+                <p>Congratulations! You're safe and the party is awesome!</p>
+            </div>
+            
+            <div class="result hidden" id="lose-result">
+                <h2>Oh no! Hungry bears! 🐻</h2>
+                <p>You've been eaten by hungry bears. Better luck next time!</p>
+            </div>
+            
+            <button id="reset-button" class="hidden">Play Again</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
