@@ -24,7 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'hidden_scream_1': 'sound effects/hidden-scream-1.mp3',
         'hidden_scream_2': 'sound effects/hidden-scream-2.mp3',
         'hidden_roar_1': 'sound effects/hidden-roar-1.mp3',
-        'knock-on-door': 'sound effects/knock-on-door.mp3'
+        'knock-on-door': 'sound effects/knock-on-door.mp3',
+        'troll_story': 'sound effects/troll_story.mp3'
     };
 
     let audioContext;
@@ -46,6 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Event listeners
     door1.addEventListener('click', () => handleDoorClick(door1, 1));
+    door1.addEventListener('touchstart', handleDoorTouchStart);
+    door1.addEventListener('touchend', handleDoorTouchEnd);
     door2.addEventListener('click', () => handleDoorClick(door2, 2));
     resetButton.addEventListener('click', resetGame);
 
@@ -176,6 +179,111 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetGame() {
         initGame();
         playSound('reset');
+    }
+
+    let doorHoldTimer;
+
+    function handleDoorTouchStart() {
+        doorHoldTimer = setTimeout(() => {
+            // Show the troll
+            showTrollDialogue();
+        }, 5000);
+    }
+
+    function handleDoorTouchEnd() {
+        clearTimeout(doorHoldTimer);
+    }
+
+    function showTrollDialogue() {
+        // Create the dialogue elements
+        const modal = document.createElement('div');
+        modal.classList.add('modal');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        `;
+
+        const modalContent = document.createElement('div');
+        modalContent.classList.add('modal-content');
+        modalContent.style.cssText = `
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        `;
+
+        const trollImage = document.createElement('img');
+        trollImage.src = 'assets/troll.png.png';
+        trollImage.alt = 'Troll';
+        trollImage.style.cssText = `
+            width: 200px;
+            height: auto;
+            margin-bottom: 10px;
+        `;
+
+        const message = document.createElement('p');
+        message.textContent = 'Do you want to listen to my story?';
+        message.style.marginBottom = '10px';
+
+        const acceptButton = document.createElement('button');
+        acceptButton.textContent = 'Yes';
+        acceptButton.style.cssText = `
+            margin-right: 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            background-color: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+        `;
+        acceptButton.addEventListener('click', () => {
+            // Play the story
+            playTrollStory();
+            modal.remove();
+        });
+
+        const declineButton = document.createElement('button');
+        declineButton.textContent = 'No';
+        declineButton.style.cssText = `
+            padding: 5px 10px;
+            border-radius: 5px;
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        `;
+        declineButton.addEventListener('click', () => {
+            modal.remove();
+        });
+
+        modalContent.appendChild(trollImage);
+        modalContent.appendChild(message);
+        modalContent.appendChild(acceptButton);
+        modalContent.appendChild(declineButton);
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+    }
+
+    function playTrollStory() {
+        // Play the story sound
+        playSound('troll_story');
+
+        // Grant safe passage
+        safePassage();
+    }
+
+    function safePassage() {
+        gameActive = false;
+        winResult.classList.remove('hidden');
+        resetButton.classList.remove('hidden');
     }
 
     // Function to display the easter egg message
