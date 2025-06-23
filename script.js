@@ -291,6 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const headline = document.querySelector('h1'); // Assuming the headline is an h1 element
 
     let headlineClicks = 0;
+    let easterEggDisplayed = false;
 
     if (headline) {
         headline.addEventListener('click', handleHeadlineClick);
@@ -304,8 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (headlineClicks <= 2) {
                 playSound('knock-on-door');
             }
-            if (headlineClicks >= 3) {
+            if (headlineClicks >= 3 && !easterEggDisplayed) {
                 displayEasterEgg();
+                easterEggDisplayed = true;
             }
         }
     }
