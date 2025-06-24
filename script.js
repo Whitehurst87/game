@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Create video element
         const video = document.createElement('video');
-        video.src = 'sound effects/troll_story.mp3';
+        video.src = 'assets/troll_video.mp4';
         video.style.cssText = `
             position: fixed;
             top: 10%;
