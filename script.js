@@ -202,10 +202,47 @@ document.addEventListener('DOMContentLoaded', () => {
         gameArea.style.display = 'none';
         instructions.style.display = 'none';
 
-        const audio = new Audio('sound effects/troll_story.mp3');
-        audio.volume = 0.5;
+        // Create video element
+        const video = document.createElement('video');
+        video.src = 'sound effects/troll_story.mp3';
+        video.style.cssText = `
+            position: fixed;
+            top: 10%;
+            left: 5%;
+            width: 90%;
+            height: 60%;
+            object-fit: contain;
+            z-index: 1001;
+            background-color: black;
+        `;
+        video.autoplay = true;
+        video.controls = false; // Hide default controls
+        document.body.appendChild(video);
 
-        audio.addEventListener('ended', () => {
+        // Create progress bar
+        const progressBar = document.createElement('progress');
+        progressBar.style.cssText = `
+            position: fixed;
+            top: 70%;
+            left: 5%;
+            width: 90%;
+            height: 20px;
+            z-index: 1002;
+        `;
+        progressBar.value = 0;
+        progressBar.max = 100;
+        document.body.appendChild(progressBar);
+
+        // Update progress bar
+        video.addEventListener('timeupdate', () => {
+            progressBar.value = (video.currentTime / video.duration) * 100;
+        });
+
+        // Remove video and progress bar when finished
+        video.addEventListener('ended', () => {
+            video.remove();
+            progressBar.remove();
+
             // Show the game area
             gameArea.style.display = 'flex';
             instructions.style.display = 'block';
@@ -213,8 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Grant safe passage
             safePassage();
         });
-
-        audio.play();
     }
 
     function safePassage() {
