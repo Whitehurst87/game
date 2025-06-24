@@ -556,6 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (headlineClicks >= 3 && !easterEggDisplayed) {
                 displayEasterEgg();
                 easterEggDisplayed = true;
+                headlineClicks = 0; // Reset clicks after triggering the easter egg
             }
         }
     }
