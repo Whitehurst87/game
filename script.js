@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let audioEnabled = false;
     let partyModeSelected = false;
     let bearIconClicks = 0;
+    let easterEggDisplayed = false;
 
     // Pre-load audio files to improve playback chances
     const audioFiles = {
@@ -64,10 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let doorHoldTimer;
 
     function handleDoorTouchStart() {
-        doorHoldTimer = setTimeout(() => {
-            // Show the troll
-            showTrollDialogue();
-        }, 3000);
+        doorHoldTimer = setTimeout(showTrollDialogue, 3000);
     }
 
     function handleDoorTouchEnd() {
@@ -216,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             left: 5%;
             width: 90%;
             height: 60%;
-            object-fit: contain;
+            object-fit: cover;
             z-index: 1001;
         `;
         video.autoplay = true;
@@ -518,7 +516,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const headline = document.querySelector('h1'); // Assuming the headline is an h1 element
 
     let headlineClicks = 0;
-    let easterEggDisplayed = false;
 
     if (headline) {
         headline.addEventListener('click', handleHeadlineClick);
@@ -542,8 +539,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayEasterEgg() {
         console.log('displayEasterEgg called');
+        if (easterEggDisplayed) return;
+        easterEggDisplayed = true;
+
         const easterEggMessage = "The bears have escaped and crashed the party!";
-        alert(easterEggMessage); // Or display in a more elegant way
+        // alert(easterEggMessage); // Or display in a more elegant way
+
+        // Swap the headline text with the easter egg message
+        const headline = document.querySelector('h1');
+        if (headline) {
+            headline.textContent = easterEggMessage;
+        }
 
         // Play hidden sound effects
         playSound('hidden_scream_1');
