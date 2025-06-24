@@ -166,9 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
         declineButton.addEventListener('click', () => {
             modal.remove();
 
-            // Play the easter egg video
+            // Play the troll video
             const video = document.createElement('video');
-            video.src = 'assets/troll_gif.gif';
+            video.src = 'assets/troll_video.mp4';
             video.style.cssText = `
                 position: fixed;
                 top: 0;
@@ -183,9 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
             video.muted = false;
             document.body.appendChild(video);
 
-            // Remove the video after it finishes playing
+            // Reset the game after the video finishes playing
             video.addEventListener('ended', () => {
                 video.remove();
+                resetGame();
             });
         });
 
