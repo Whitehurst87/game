@@ -165,6 +165,28 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         declineButton.addEventListener('click', () => {
             modal.remove();
+
+            // Play the easter egg video
+            const video = document.createElement('video');
+            video.src = 'assets/troll_video.mp4';
+            video.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                z-index: 1001;
+                background-color: black;
+            `;
+            video.autoplay = true;
+            video.muted = false; // Ensure the video is not muted
+            document.body.appendChild(video);
+
+            // Remove the video after it finishes playing
+            video.addEventListener('ended', () => {
+                video.remove();
+            });
         });
 
         modalContent.appendChild(trollImage);
