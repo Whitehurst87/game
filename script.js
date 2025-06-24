@@ -247,7 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove video and progress bar when finished
         audio.addEventListener('ended', () => {
             video.remove();
-            storyVideo.remove();
             progressBar.remove();
 
             // Show the game area
@@ -259,25 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         audio.play();
-
-        // Create video element for storytime
-        let storyVideo;
-        storyVideo = document.createElement('video');
-        storyVideo.src = 'assets/storytime.mp4';
-        storyVideo.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 999;
-            background-color: black;
-        `;
-        storyVideo.autoplay = true;
-        storyVideo.loop = true;
-        storyVideo.muted = true; // Mute the video to avoid conflicting audio
-        document.body.appendChild(storyVideo);
     }
 
     function safePassage() {
