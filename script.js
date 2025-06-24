@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Play the easter egg video
             const video = document.createElement('video');
-            video.src = 'assets/troll_video.mp4';
+            video.src = 'assets/troll_gif.gif';
             video.style.cssText = `
                 position: fixed;
                 top: 0;
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 background-color: black;
             `;
             video.autoplay = true;
-            video.muted = false; // Ensure the video is not muted
+            video.muted = false;
             document.body.appendChild(video);
 
             // Remove the video after it finishes playing
@@ -202,9 +202,13 @@ document.addEventListener('DOMContentLoaded', () => {
         gameArea.style.display = 'none';
         instructions.style.display = 'none';
 
-        // Create video element
+        // Create audio element
+        const audio = new Audio('sound effects/troll_story.mp3');
+        audio.volume = 0.5;
+
+        // Create video element for the GIF
         const video = document.createElement('video');
-        video.src = 'assets/troll_video.mp4';
+        video.src = 'assets/troll_gif.gif';
         video.style.cssText = `
             position: fixed;
             top: 10%;
@@ -216,7 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
             background-color: black;
         `;
         video.autoplay = true;
-        video.controls = false; // Hide default controls
+        video.loop = true; // Loop the GIF
+        video.muted = true;
         document.body.appendChild(video);
 
         // Create progress bar
@@ -234,12 +239,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(progressBar);
 
         // Update progress bar
-        video.addEventListener('timeupdate', () => {
-            progressBar.value = (video.currentTime / video.duration) * 100;
+        audio.addEventListener('timeupdate', () => {
+            progressBar.value = (audio.currentTime / audio.duration) * 100;
         });
 
         // Remove video and progress bar when finished
-        video.addEventListener('ended', () => {
+        audio.addEventListener('ended', () => {
             video.remove();
             progressBar.remove();
 
@@ -250,6 +255,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Grant safe passage
             safePassage();
         });
+
+        audio.play();
     }
 
     function safePassage() {
