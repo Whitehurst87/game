@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Create video element for the GIF
         const video = document.createElement('video');
-        video.src = 'assets/troll_gif.gif';
+        video.src = 'assets/storytime.mp4';
         video.style.cssText = `
             position: fixed;
             top: 10%;
@@ -218,7 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
             height: 60%;
             object-fit: contain;
             z-index: 1001;
-            background-color: black;
         `;
         video.autoplay = true;
         video.loop = true; // Loop the GIF
@@ -244,9 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
             progressBar.value = (audio.currentTime / audio.duration) * 100;
         });
 
-        // Remove video and progress bar when finished
+
         audio.addEventListener('ended', () => {
-            video.remove();
             progressBar.remove();
 
             // Show the game area
