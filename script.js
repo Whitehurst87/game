@@ -271,6 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
             height: 100%;
             object-fit: cover;
             z-index: 999;
+            background-color: black;
         `;
         storyVideo.autoplay = true;
         storyVideo.loop = true;
