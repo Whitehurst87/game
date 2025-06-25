@@ -506,8 +506,94 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Show a UI element to let the user manually start playback.
                     if (error.name === 'NotAllowedError') {
                         console.log('Autoplay prevented by browser.');
-                    }
-                });
+    }
+
+    // Funny sequence after 30 seconds of inactivity
+    let timeoutId = setTimeout(showFunnySequence, 30000);
+
+    function showFunnySequence() {
+        // Create vinnie image
+        const vinnie = document.createElement('img');
+        vinnie.src = 'assets/vinnie.png';
+        vinnie.style.cssText = `
+            position: fixed;
+            top: 50%;
+            right: -500px; /* Start off-screen */
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: all 1s ease-in-out;
+            z-index: 1000;
+        `;
+        document.body.appendChild(vinnie);
+
+        // Fade in vinnie
+        setTimeout(() => {
+            vinnie.style.right = '10%';
+            vinnie.style.transform = 'translateY(-50%)';
+            vinnie.style.opacity = 1;
+        }, 50);
+
+        // Play oh-no-cat sound
+        const ohNoCat = new Audio('sound effects/oh-no-cat.mp3');
+        ohNoCat.play();
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        `;
+        document.body.appendChild(modal);
+
+        // Create modal content
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        `;
+        modal.appendChild(modalContent);
+
+        // Create prompt
+        const prompt = document.createElement('p');
+        prompt.textContent = "Why haven't you picked a door yet?";
+        modalContent.appendChild(prompt);
+
+        // Create input
+        const input = document.createElement('input');
+        modalContent.appendChild(input);
+
+        // Create button
+        const button = document.createElement('button');
+        button.textContent = "Submit";
+        button.onclick = () => {
+            // Cat says something silly
+            alert("No excuses, pick a door!");
+            modal.remove();
+        };
+        modalContent.appendChild(button);
+    }
+
+    // Reset timeout on any user interaction
+    document.addEventListener('mousemove', resetTimeout);
+    document.addEventListener('keypress', resetTimeout);
+    document.addEventListener('click', resetTimeout);
+    document.addEventListener('touchstart', resetTimeout);
+
+    function resetTimeout() {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(showFunnySequence, 30000);
+    }
+});
             }
         }
     }
