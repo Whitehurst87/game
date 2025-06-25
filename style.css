@@ -212,3 +212,33 @@ h1 {
         font-size: 1rem;
     }
 }
+
+.vinnie {
+  width: 200px;
+  position: absolute;
+  animation: vinnieEntrance 3s ease-in-out forwards;
+  display: none; /* Initially hidden */
+}
+
+@keyframes vinnieEntrance {
+  0% {
+    transform: translateX(-200px) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(0px) rotate(720deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0px) rotate(720deg);
+    opacity: 1;
+  }
+}
+
+.vinnie-dialogue {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none; /* Initially hidden */
+}

@@ -29,7 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'hidden_roar_1': 'sound effects/hidden-roar-1.mp3',
         'knock-on-door': 'sound effects/knock-on-door.mp3',
         'troll_story': 'sound effects/troll_story.mp3',
-        'cat_music': 'sound effects/cat-music.mp3'
+        'cat-music': 'sound effects/cat-music.mp3',
+        'oh-no-cat': 'sound effects/oh-no-cat.mp3'
     };
 
     let audioContext;
@@ -50,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize the game
     initGame();
-    startInactivityTimer(); // Start the inactivity timer immediately
 
     // Event listeners
     door1.addEventListener('click', () => handleDoorClick(door1, 1));
@@ -384,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (headline) {
             headline.classList.add('clickable-headline');
         }
+
     }
 
     // Function to reset doors
@@ -514,139 +515,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Funny sequence after 30 seconds of inactivity
-    let inactivityTimeoutId;
-
-    function startInactivityTimer() {
-        console.log('Starting inactivity timer...');
-        clearTimeout(inactivityTimeoutId); // Clear any existing timer
-        inactivityTimeoutId = setTimeout(showFunnySequence, 15000);
-    }
-
-    function showFunnySequence() {
-        console.log('Attempting to show funny sequence. gameActive:', gameActive);
-        // Only show if the game is still active (no door has been picked)
-        if (!gameActive) {
-            console.log('Game is not active, funny sequence aborted.');
-            return;
-        }
-        console.log('Game is active, proceeding with funny sequence.');
-
-        // Create vinnie image
-        const vinnie = document.createElement('img');
-        vinnie.src = 'assets/vinnie.png';
-        vinnie.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%; /* Center horizontally */
-            transform: translate(-50%, -50%); /* Adjust for centering */
-            opacity: 0;
-            transition: all 1s ease-in-out;
-            z-index: 1000;
-        `;
-        document.body.appendChild(vinnie);
-
-        // Fade in vinnie
-        setTimeout(() => {
-            vinnie.style.opacity = 1;
-        }, 50);
-
-        // Play oh-no-cat sound
-        playSound('oh-no-cat');
-
-        // Play cat music
-        const catMusic = new Audio(audioFiles['cat_music']);
-        catMusic.loop = true;
-        catMusic.volume = 0.6; // Adjust volume as needed
-        if (audioEnabled) {
-            catMusic.play();
-            window.currentCatMusic = catMusic; // Store reference to stop it later
-        } else {
-            console.log('Cat music not played because audio is not enabled.');
-        }
-
-        // Create modal
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: transparent; /* No dimming */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1001;
-        `;
-        document.body.appendChild(modal);
-
-        // Create modal content
-        const modalContent = document.createElement('div');
-        modalContent.style.cssText = `
-            background-color: #1c1f6b;
-            padding: 20px;
-            border-radius: 5px;
-            text-align: center;
-        `;
-        modal.appendChild(modalContent);
-
-        // Add audio prompt if audio is not enabled
-        if (!audioEnabled) {
-            const audioPrompt = document.createElement('p');
-            audioPrompt.textContent = "Click anywhere to enable sound!";
-            audioPrompt.style.cssText = `
-                color: yellow;
-                margin-bottom: 10px;
-            `;
-            modalContent.appendChild(audioPrompt);
-        }
-
-        // Create prompt
-        const prompt = document.createElement('p');
-        prompt.textContent = "Why haven't you picked a door yet?";
-        modalContent.appendChild(prompt);
-
-        // Create input
-        const input = document.createElement('input');
-        modalContent.appendChild(input);
-
-        // Create button
-        const button = document.createElement('button');
-        button.textContent = "Submit";
-        button.onclick = () => {
-            // Stop cat music
-            if (window.currentCatMusic) {
-                window.currentCatMusic.pause();
-                window.currentCatMusic.currentTime = 0;
-                window.currentCatMusic = null;
-            }
-
-            const userAnswer = input.value.toLowerCase().trim();
-            if (userAnswer === "bathroom") {
-                alert("No worries, I understand. Happy scrolling!");
-            } else {
-                alert("No excuses, pick a door!");
-            }
-            modal.remove();
-            vinnie.remove(); // Remove vinnie image when modal is closed
-            startInactivityTimer(); // Restart timer after interaction
-        };
-        modalContent.appendChild(button);
-    }
-
-    // Reset timeout on any user interaction (excluding the funny sequence modal interaction)
-    document.addEventListener('mousemove', resetTimeout);
-    document.addEventListener('keypress', resetTimeout);
-    document.addEventListener('click', resetTimeout);
-    document.addEventListener('touchstart', resetTimeout);
-
-    function resetTimeout() {
-        if (gameActive) { // Only reset if the game is active
-            console.log('User interaction detected. Resetting inactivity timer.');
-            startInactivityTimer(); // This function already clears and sets a new timeout
-        }
-    }
 
     // Headline click handler (Easter Egg)
     const headline = document.querySelector('h1'); // Assuming the headline is an h1 element
@@ -693,5 +561,42 @@ document.addEventListener('DOMContentLoaded', () => {
         playSound('hidden_roar_1');
 
         shakeScreen(500, 20);
+    }
+    // Add Vinnie image
+    const vinnieImg = document.createElement('img');
+    vinnieImg.src = 'assets/vinnie.png';
+    vinnieImg.alt = 'Vinnie';
+    vinnieImg.classList.add('vinnie');
+    document.body.appendChild(vinnieImg);
+
+    // Add Vinnie dialogue box
+    const vinnieDialogue = document.createElement('div');
+    vinnieDialogue.classList.add('vinnie-dialogue');
+    vinnieDialogue.innerHTML = '<p>Great, you tilted my litterbox. Thanks for that. This had better be good.</p><button id="continue-game">Continue Game</button>';
+    document.body.appendChild(vinnieDialogue);
+
+    // Add event listener for orientation change
+    let orientationChangeTimeout;
+    window.addEventListener('orientationchange', () => {
+        clearTimeout(orientationChangeTimeout);
+        orientationChangeTimeout = setTimeout(() => {
+            if (partyModeSelected) {
+                showVinnie();
+            }
+        }, 500); // Delay to avoid accidental triggering
+    });
+
+    // Function to show Vinnie
+    function showVinnie() {
+        vinnieImg.style.display = 'block';
+        playSound('cat-music');
+        setTimeout(() => {
+            vinnieDialogue.style.display = 'block';
+            playSound('oh-no-cat');
+            document.getElementById('continue-game').addEventListener('click', () => {
+                vinnieImg.style.display = 'none';
+                vinnieDialogue.style.display = 'none';
+            });
+        }, 3000); // Wait for animation to complete
     }
 });
