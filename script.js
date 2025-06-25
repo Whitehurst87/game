@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize the game
     initGame();
+    startInactivityTimer(); // Start the inactivity timer immediately
 
     // Event listeners
     door1.addEventListener('click', () => handleDoorClick(door1, 1));
@@ -537,8 +538,8 @@ document.addEventListener('DOMContentLoaded', () => {
         vinnie.style.cssText = `
             position: fixed;
             top: 50%;
-            right: -500px; /* Start off-screen */
-            transform: translateY(-50%);
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Adjust for centering */
             opacity: 0;
             transition: all 1s ease-in-out;
             z-index: 1000;
@@ -547,21 +548,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Fade in vinnie
         setTimeout(() => {
-            vinnie.style.right = '10%';
-            vinnie.style.transform = 'translateY(-50%)';
             vinnie.style.opacity = 1;
         }, 50);
 
         // Play oh-no-cat sound
-        const ohNoCat = new Audio('sound effects/oh-no-cat.mp3');
-        ohNoCat.play();
+        playSound('oh-no-cat');
 
         // Play cat music
         const catMusic = new Audio(audioFiles['cat_music']);
         catMusic.loop = true;
         catMusic.volume = 0.6; // Adjust volume as needed
-        catMusic.play();
-        window.currentCatMusic = catMusic; // Store reference to stop it later
+        if (audioEnabled) {
+            catMusic.play();
+            window.currentCatMusic = catMusic; // Store reference to stop it later
+        } else {
+            console.log('Cat music not played because audio is not enabled.');
+        }
 
         // Create modal
         const modal = document.createElement('div');
@@ -571,7 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: transparent; /* No dimming */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -588,6 +590,17 @@ document.addEventListener('DOMContentLoaded', () => {
             text-align: center;
         `;
         modal.appendChild(modalContent);
+
+        // Add audio prompt if audio is not enabled
+        if (!audioEnabled) {
+            const audioPrompt = document.createElement('p');
+            audioPrompt.textContent = "Click anywhere to enable sound!";
+            audioPrompt.style.cssText = `
+                color: yellow;
+                margin-bottom: 10px;
+            `;
+            modalContent.appendChild(audioPrompt);
+        }
 
         // Create prompt
         const prompt = document.createElement('p');
@@ -609,8 +622,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.currentCatMusic = null;
             }
 
-            // Cat says something silly
-            alert("No excuses, pick a door!");
+            const userAnswer = input.value.toLowerCase().trim();
+            if (userAnswer === "bathroom") {
+                alert("No worries, I understand. Happy scrolling!");
+            } else {
+                alert("No excuses, pick a door!");
+            }
             modal.remove();
             vinnie.remove(); // Remove vinnie image when modal is closed
             startInactivityTimer(); // Restart timer after interaction
