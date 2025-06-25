@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'hidden_scream_2': 'sound effects/hidden-scream-2.mp3',
         'hidden_roar_1': 'sound effects/hidden-roar-1.mp3',
         'knock-on-door': 'sound effects/knock-on-door.mp3',
-        'troll_story': 'sound effects/troll_story.mp3'
+        'troll_story': 'sound effects/troll_story.mp3',
+        'cat_music': 'sound effects/cat-music.mp3'
     };
 
     let audioContext;
@@ -506,12 +507,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Show a UI element to let the user manually start playback.
                     if (error.name === 'NotAllowedError') {
                         console.log('Autoplay prevented by browser.');
+                    }
+                });
+            }
+        }
     }
 
     // Funny sequence after 30 seconds of inactivity
-    let timeoutId = setTimeout(showFunnySequence, 30000);
+    let inactivityTimeoutId;
+
+    function startInactivityTimer() {
+        console.log('Starting inactivity timer...');
+        clearTimeout(inactivityTimeoutId); // Clear any existing timer
+        inactivityTimeoutId = setTimeout(showFunnySequence, 15000);
+    }
 
     function showFunnySequence() {
+        console.log('Attempting to show funny sequence. gameActive:', gameActive);
+        // Only show if the game is still active (no door has been picked)
+        if (!gameActive) {
+            console.log('Game is not active, funny sequence aborted.');
+            return;
+        }
+        console.log('Game is active, proceeding with funny sequence.');
+
         // Create vinnie image
         const vinnie = document.createElement('img');
         vinnie.src = 'assets/vinnie.png';
@@ -537,6 +556,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const ohNoCat = new Audio('sound effects/oh-no-cat.mp3');
         ohNoCat.play();
 
+        // Play cat music
+        const catMusic = new Audio(audioFiles['cat_music']);
+        catMusic.loop = true;
+        catMusic.volume = 0.6; // Adjust volume as needed
+        catMusic.play();
+        window.currentCatMusic = catMusic; // Store reference to stop it later
+
         // Create modal
         const modal = document.createElement('div');
         modal.style.cssText = `
@@ -556,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Create modal content
         const modalContent = document.createElement('div');
         modalContent.style.cssText = `
-            background-color: white;
+            background-color: #1c1f6b;
             padding: 20px;
             border-radius: 5px;
             text-align: center;
@@ -576,25 +602,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = document.createElement('button');
         button.textContent = "Submit";
         button.onclick = () => {
+            // Stop cat music
+            if (window.currentCatMusic) {
+                window.currentCatMusic.pause();
+                window.currentCatMusic.currentTime = 0;
+                window.currentCatMusic = null;
+            }
+
             // Cat says something silly
             alert("No excuses, pick a door!");
             modal.remove();
+            vinnie.remove(); // Remove vinnie image when modal is closed
+            startInactivityTimer(); // Restart timer after interaction
         };
         modalContent.appendChild(button);
     }
 
-    // Reset timeout on any user interaction
+    // Reset timeout on any user interaction (excluding the funny sequence modal interaction)
     document.addEventListener('mousemove', resetTimeout);
     document.addEventListener('keypress', resetTimeout);
     document.addEventListener('click', resetTimeout);
     document.addEventListener('touchstart', resetTimeout);
 
     function resetTimeout() {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(showFunnySequence, 30000);
-    }
-});
-            }
+        if (gameActive) { // Only reset if the game is active
+            console.log('User interaction detected. Resetting inactivity timer.');
+            startInactivityTimer(); // This function already clears and sets a new timeout
         }
     }
 
